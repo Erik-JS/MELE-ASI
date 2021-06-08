@@ -39,19 +39,20 @@ DWORD64 FindPattern(DWORD64 StartAddress, DWORD64 CodeLen, BYTE* Mask, const cha
 
 DWORD WINAPI Start(LPVOID lpParam)
 {
-    Sleep(1000);
-    DWORD64 bResult1 = FindPattern(0x140000000, 0x2000000, pattern1, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", 0);
+    DWORD64 exeBaseAddress = (DWORD64)GetModuleHandle(NULL);
+    DWORD64 bResult1 = FindPattern(exeBaseAddress, 0x2000000, pattern1, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", 0);
     if (bResult1 == 0)
         return 0;
-    DWORD64 qResult2 = FindPattern(0x140000000, 0x2000000, (BYTE*)&bResult1, "xxxxxxxx", 0);
+    DWORD64 qResult2 = FindPattern(exeBaseAddress, 0x2000000, (BYTE*)&bResult1, "xxxxxxxx", 0);
     DWORD64 *mTarget = (DWORD64*)qResult2;
-    DWORD dwProtect = NULL;
-    VirtualProtect((void*)(&mTarget[1]), sizeof(DWORD64), PAGE_READWRITE, &dwProtect );
-    VirtualProtect((void*)(&mTarget[5]), sizeof(DWORD64), PAGE_READWRITE, &dwProtect );
+    DWORD dwProtect1 = NULL;
+    DWORD dwProtect2 = NULL;
+    VirtualProtect((void*)(&mTarget[1]), sizeof(DWORD64), PAGE_READWRITE, &dwProtect1 );
+    VirtualProtect((void*)(&mTarget[5]), sizeof(DWORD64), PAGE_READWRITE, &dwProtect2 );
     mTarget[1] = mTarget[3];
     mTarget[5] = mTarget[3];
-    VirtualProtect((void*)(&mTarget[1]), sizeof(DWORD64), dwProtect, &dwProtect );
-    VirtualProtect((void*)(&mTarget[5]), sizeof(DWORD64), dwProtect, &dwProtect );
+    VirtualProtect((void*)(&mTarget[1]), sizeof(DWORD64), dwProtect1, &dwProtect1 );
+    VirtualProtect((void*)(&mTarget[5]), sizeof(DWORD64), dwProtect2, &dwProtect2 );
     return 0;
 }
 
